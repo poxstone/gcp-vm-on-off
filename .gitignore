@@ -1,0 +1,8 @@
+*.pyc
+*.sw[mnop]
+terraform/.terraform
+terraform/terraform.tfstate.backup
+terraform/terraform.tfstate
+terraform/*.json
+*.zip
+.vscode/*
