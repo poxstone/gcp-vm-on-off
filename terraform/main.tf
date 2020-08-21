@@ -42,7 +42,7 @@ resource "google_cloud_scheduler_job" "mv_schedule_on" {
 
   pubsub_target {
     topic_name = google_pubsub_topic.topic_schedule.id
-    data       = base64encode("{ 'on_off': 'on', 'instances': ${var.message_instances} }")
+    data       = base64encode("{ 'on_off': 'on', ${var.message_instances} }")
   }
 }
 
@@ -54,6 +54,6 @@ resource "google_cloud_scheduler_job" "mv_schedule_off" {
 
   pubsub_target {
     topic_name = google_pubsub_topic.topic_schedule.id
-    data       = base64encode("{ 'on_off': 'off', 'instances': ${var.message_instances} }")
+    data       = base64encode("{ 'on_off': 'off', ${var.message_instances} }")
   }
 }

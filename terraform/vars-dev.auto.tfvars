@@ -1,7 +1,7 @@
 # general
 project_id="co-oortiz-internal"
 account_key="account_key.json"
-service_account_email=""  # default compute engine may be
+service_account_email="402543303294-compute@developer.gserviceaccount.com"  # default compute engine may be
 region="us-east1"
 zone="us-east1-b"
 
@@ -12,6 +12,6 @@ function_entry="vm_start_stop"
 function_timeout=540
 
 time_zone="America/Bogota"
-schedule_chrone_on="*/5 * * * *"
-schedule_chrone_off="*/1 * * * *"
-message_instances="[ {'name':'centos-7kvm', 'zone':'us-east1-b'}, {'name':'centos-7kvm-1', 'zone':'us-east1-b'} ]"
+schedule_chrone_on="57 22 * * *"
+schedule_chrone_off="0 23 * * *"
+message_instances="'gce':[ {'name':'*', 'zone':'us-east1-b'}], 'sql':[ {'name':'*'}], 'gke':[{'name':'*'}]"

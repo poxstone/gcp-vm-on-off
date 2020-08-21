@@ -4,5 +4,6 @@ terraform/.terraform
 terraform/terraform.tfstate.backup
 terraform/terraform.tfstate
 terraform/*.json
+terraform.tfstate
 *.zip
 .vscode/*
