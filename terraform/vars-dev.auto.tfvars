@@ -14,4 +14,4 @@ function_timeout=540
 time_zone="America/Bogota"
 schedule_chrone_on="57 22 * * *"
 schedule_chrone_off="0 23 * * *"
-message_instances="'gce':[ {'name':'*', 'zone':'us-east1-b'}], 'sql':[ {'name':'*'}], 'gke':[{'name':'*'}]"
+message_instances="'gce':[ {'name':'*', 'zone':'us-east1-b'}], 'sql':[ {'name':'*'}], 'gke':[{'name':'*', 'zone': 'us-east1-b', 'nodeCount': 2}]"

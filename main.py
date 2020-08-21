@@ -29,9 +29,48 @@ def gce_onoff(service, instance, on_off):
             vm_request = service.instances().stop(project=PROJECT_ID,
                          zone=instance['zone'], instance=instance['name'])
         pprint('{} status: {} = {}'.format(GCE, instance, on_off))
-        response = vm_request.execute()
+        vm_request.execute()
     except Exception as e:
         pprint('{} error: {} = {} - {}'.format(GCE, instance, on_off, str(e)))
+
+
+def gke_onoff(service, cluster, on_off):
+    if on_off == OFF:
+        node_count = 0
+    else:
+        node_count = cluster['nodeCount'] if 'nodeCount' in cluster else 3
+
+    # get node pools
+    if not ('nodePools' in cluster and len(cluster['nodePools'])):
+        cluster['nodePools'] = []
+        try:
+            nodepools = service.projects().zones().clusters().nodePools().list(
+                            projectId=PROJECT_ID,
+                            zone=cluster['zone'],
+                            clusterId=cluster['name']).execute()['nodePools']
+            for nodepool in nodepools:
+                cluster['nodePools'].append(nodepool['name'])
+
+        except Exception as e:
+            pprint('{} error: {} = {} - {}'.format(GKE, cluster, on_off, str(e)))
+
+    # Resize nodepools
+    nodepools = cluster['nodePools']
+    body = {"nodeCount": int(node_count)}
+    for nodepool in nodepools:
+        try:
+            vm_request = service.projects().zones().clusters().nodePools()\
+                                    .setSize(projectId=PROJECT_ID,
+                                             zone=cluster['zone'],
+                                             clusterId=cluster['name'],
+                                             nodePoolId=nodepool,
+                                             body=body)
+            pprint('{} status: {}/{} = {}'.format(GKE, cluster, nodepool,
+                                                  on_off))
+            vm_request.execute()
+        except Exception as e:
+            pprint('{} error: {}/{} = {} - {}'.format(GKE, cluster, nodepool,
+                                                      on_off, str(e)))
 
 
 def sql_onoff(service, instance, on_off):
@@ -46,7 +85,7 @@ def sql_onoff(service, instance, on_off):
                                                instance=instance['name'],
                                                body=body)
         pprint('{} status: {} = {}'.format(SQL, instance, on_off))
-        response = vm_request.execute()
+        vm_request.execute()
     except Exception as e:
         pprint('{} error: {} = {} - {}'.format(SQL, instance, on_off, str(e)))
 
@@ -63,7 +102,7 @@ def vm_start_stop(event, context=None):
             #{"name":"my-vm"}
         ],
         GKE: [
-            #{"name":"my-vm", "zone":"us-east1-b"}
+            #{"name":"my-vm", "zone":"us-east1-b", "nodePools": [], "nodeCount": 3}
         ]}
 
     try:
@@ -74,6 +113,31 @@ def vm_start_stop(event, context=None):
         pprint(str(e))
     
     on_off = data[ON_OFF].lower()
+        
+    # Cloud GKE
+    if GKE in data and data[GKE]:
+        pprint('init {}'.format(GKE))
+        service = discovery.build('container', 'v1', credentials=credentials)
+        for cluster in data[GKE]:
+            if cluster['name'] == ALL:
+                clusters_list = []
+                try:
+                    clusters_list = service.projects().zones().clusters().list(
+                        projectId=PROJECT_ID, zone=cluster['zone']
+                        ).execute()['clusters']
+                except Exception as e:
+                    pprint(e)
+                    continue
+                for cluster_found in clusters_list:
+                    cluster_data = {"name": cluster_found["name"],
+                                    "zone": cluster['zone'],
+                                    "nodePools": []}
+                    for nodePool_found in cluster_found['nodePools']:
+                        cluster_data['nodePools'].append(nodePool_found['name'])
+                    gke_onoff(service=service, cluster=cluster_data,
+                              on_off=on_off)
+            else:
+                gke_onoff(service=service, cluster=cluster, on_off=on_off)
     
     # GCE instances
     if GCE in data and data[GCE]:
@@ -85,8 +149,8 @@ def vm_start_stop(event, context=None):
                 instances_list = []
                 try:
                     instances_list = service.instances().list(
-                                    project=PROJECT_ID, zone=instance["zone"]
-                                    ).execute()['items']
+                                     project=PROJECT_ID, zone=instance["zone"]
+                                     ).execute()['items']
                 except Exception as e:
                     pprint(e)
                     continue
@@ -137,9 +201,5 @@ def vm_start_stop(event, context=None):
                               on_off=on_off)
             else:
                 sql_onoff(service=service, instance=instance, on_off=on_off)
-    
-    # Cloud GKE
-    if GKE in data and data[GKE]:
-        pprint('init {}'.format(GKE))
 
     return 'ok'
