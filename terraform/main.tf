@@ -1,3 +1,21 @@
+# Module Projec API activation
+module "project-services" {
+  source        = "terraform-google-modules/project-factory/google//modules/project_services"
+  version       = "4.0.0"
+
+  project_id                  = var.project_id
+  disable_services_on_destroy = false
+
+  activate_apis               = [
+                                "pubsub.googleapis.com",
+                                "cloudscheduler.googleapis.com",
+                                "cloudfunctions.googleapis.com",
+                                "storage.googleapis.com",
+                                "cloudbuild.googleapis.com",
+                                "appengine.googleapis.com"
+                              ]
+}
+
 # pub/sub
 resource "google_pubsub_topic" "topic_schedule" {
   name = "${var.deploy_name_prefix}-schedule"

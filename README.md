@@ -33,6 +33,16 @@ General components description
 1. Cloud Schedule
    - pub/sub
 
+# Requirements
+- ***APIS***:
+  - pubsub.googleapis.com
+  - cloudscheduler.googleapis.com
+  - cloudfunctions.googleapis.com
+  - storage.googleapis.com
+  - cloudbuild.googleapis.com
+  - appengine.googleapis.com
+- ***Enable AppEngine*** application (enter and enable in region)
+
 
 ## Deploy GCloud
 - Load variables:
